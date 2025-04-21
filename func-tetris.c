@@ -24,7 +24,7 @@ Shape CoppyShape(Shape shape)
     int i, j;
     for (i = 0; i < new_shape.width; i++) {
         new_shape.array[i] = (char *)malloc(new_shape.width * sizeof(char));
-        if (!new_shape.array) {
+        if (!new_shape.array[i]) {
             exit(1);
         }
         for (j = 0; j < new_shape.width; j++) {
@@ -74,10 +74,6 @@ void GetNewShape()
     current = new_shape;
     if (!CheckPosition(current)) {
         GameOn = FALSE;
-        clear();
-        mvprintw(ROWS / 2, (COLS - 10) / 2, "Game Over!");
-        mvprintw(ROWS / 2 + 1, (COLS - 10) / 2, "Score: %d", score);
-        refresh();
     }
 }
 
@@ -139,14 +135,17 @@ void PrintTable()
 {
     char buffer[ROWS][COLS] = {0};
     int i, j;
-
-    for (i = 0; i < current.width; i++) {
-        for (j = 0; j < current.width; j++) {
-            if (current.array[i][j]) {
-                buffer[current.row + i][current.col + j] = current.array[i][j];
+    
+    if (current.array && GameOn) {
+        for (i = 0; i < current.width; i++) {
+            for (j = 0; j < current.width; j++) {
+                if (current.array[i][j]) {
+                    buffer[current.row + i][current.col + j] = current.array[i][j];
+                }
             }
         }
     }
+
     clear();
     for (i = 0; i < ROWS + 2; i++) {
         for (j = 0; j < COLS + 2; j++) {
@@ -159,11 +158,36 @@ void PrintTable()
         printw("\n");
     }
     mvprintw(ROWS + 3, 0, "Score: %d", score);
+    mvprintw(ROWS + 4, 0, "q: Quit, r: Restart");
     refresh();
+}
+
+void ResetGame()
+{
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            Table[i][j] = 0;
+        }
+    }
+
+    score = 0;
+    timer = 500000;
+    GameOn = TRUE;
+
+    if (current.array) {
+        DeleteShape(current);
+        current.array = NULL;
+    }
+    GetNewShape();
 }
 
 void ManipulateCurrent(int action)
 {
+    if (action == 'r' || action == 'R') {
+        ResetGame();
+        PrintTable();
+        return;
+    }
     Shape temp = CoppyShape(current);
     switch (action) {
         case 's':
