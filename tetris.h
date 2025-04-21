@@ -27,5 +27,5 @@ void WriteToTable();
 void Halleluyah_Baby();
 void PrintTable();
 void ManipulateCurrent(int action);
-
+void ResetGame();
 #endif
